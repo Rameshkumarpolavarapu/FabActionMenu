@@ -1,13 +1,13 @@
 package com.ramesh.polavarapu.fabactionmenu;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,24 +26,31 @@ public class MainActivity extends AppCompatActivity implements IFabMenuListener 
 
     }
 
-    private ScrollView getRootView() {
-
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.setFillViewport(true);
-        scrollView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    private RelativeLayout getRootView() {
 
         RelativeLayout relativeLayout = new RelativeLayout(this);
-        relativeLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        RelativeLayout.LayoutParams params  =   new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        relativeLayout.setLayoutParams(params);
+        relativeLayout.setBackgroundColor(Color.WHITE);
 
-        LinearLayout linearLayout = new LinearLayout(this);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        for (int i = 0; i < 15; i++) {
-            TextView textView = new TextView(this);
-            textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            textView.setText(getString(R.string.app_name));
-            linearLayout.addView(textView);
+        LinearLayout verticalLayout = new LinearLayout(this);
+        verticalLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+        verticalLayout.setOrientation(LinearLayout.VERTICAL);
+
+        for (int i = 0; i < 35; i++) {
+            LinearLayout horizontalLayout = new LinearLayout(this);
+            horizontalLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            for (int j = 0; j < 3; j++) {
+                TextView textView = new TextView(this);
+                LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+                textView.setText(getString(R.string.app_name));
+
+                horizontalLayout.addView(textView, textParams);
+            }
+            verticalLayout.addView(horizontalLayout);
         }
-        relativeLayout.addView(linearLayout);
+        relativeLayout.addView(verticalLayout);
+
         FabActionMenu fabActionMenu = new FabActionMenu(this, myActionDtos, this);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         fabActionMenu.setId(R.id.fab);
@@ -52,11 +59,10 @@ public class MainActivity extends AppCompatActivity implements IFabMenuListener 
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         fabActionMenu.setLayoutParams(layoutParams);
+
         relativeLayout.addView(fabActionMenu);
 
-        scrollView.addView(relativeLayout);
-
-        return scrollView;
+        return relativeLayout;
     }
 
     private void init() {
@@ -82,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements IFabMenuListener 
 
     @Override
     public void onFabItemClick(View v, Object objItem) {
-        String s = ((TextView) ((LinearLayout) findViewById(v.getId())).getChildAt(0)).getText().toString();
+        String s = ((TextView) (((CardView) ((LinearLayout) findViewById(v.getId())).getChildAt(0)).getChildAt(0))).getText().toString();
         Toast.makeText(MainActivity.this, "" + s, Toast.LENGTH_SHORT).show();
     }
 }

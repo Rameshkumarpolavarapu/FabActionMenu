@@ -3,9 +3,11 @@ package com.ramesh.polavarapu.fabactionmenu;
 import android.animation.Animator;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.design.widget.FloatingActionButton;
 import android.view.Gravity;
 import android.view.View;
+import android.support.v7.widget.CardView;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -14,7 +16,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.ramesh.polavarapu.fabactionmenu.dto.MyActionDto;
-
 
 public class FabActionMenu extends FloatingActionButton implements View.OnClickListener {
 
@@ -60,12 +61,17 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
         if (getParent() != null) {
             ViewGroup mainLayout = ((ViewGroup) getParent());
             mainLayout.removeView(this);
+            mainLayout.addView(getBackgroundView(context));
             mainLayout.addView(fabMenuHolder);
             mainLayout.addView(this);
         }
     }
 
     private LinearLayout getFabMenuView(Context context, MyActionDto myActionDto, int iFabDrawableId, int iPosition) {
+
+        int i1dp    =   toDip(context,1);
+        int i2dp    =   toDip(context,2);
+
         LinearLayout fabHolder = new LinearLayout(context);
         fabHolder.setClipToPadding(false);
         fabHolder.setId(iPosition);
@@ -78,11 +84,18 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
         fabHolder.setOnClickListener(this);
         fabHolder.setClipToPadding(false);
 
+        CardView clLabelCardViewHolder = new CardView(context);
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        clLabelCardViewHolder.setLayoutParams(cardParams);
+
+
         TextView menuLabel = new TextView(context);
+        menuLabel.setPadding(i2dp,i1dp,i2dp,i1dp);
         LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 3);
         menuLabel.setGravity(Gravity.CENTER_VERTICAL);
         menuLabel.setLayoutParams(textParams);
         menuLabel.setText(myActionDto.getLabel());
+        clLabelCardViewHolder.addView(menuLabel);
 
         FloatingActionButton fabItem = new FloatingActionButton(context);
         LinearLayout.LayoutParams fabParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
@@ -91,10 +104,21 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
 
         fabParams.setMargins(toDip(context, 10), 0, 0, 0);
         fabItem.setLayoutParams(fabParams);
-        fabHolder.addView(menuLabel);
+        fabHolder.addView(clLabelCardViewHolder);
         fabHolder.addView(fabItem);
 
         return fabHolder;
+    }
+
+    private View getBackgroundView(Context clContext) {
+
+        View clBackgroundBlurView = new View(clContext);
+        clBackgroundBlurView.setVisibility(INVISIBLE);
+        clBackgroundBlurView.setOnClickListener(this);
+        clBackgroundBlurView.setId(R.id.fab_blur_background);
+        clBackgroundBlurView.setBackgroundColor(Color.parseColor("#26000000"));
+        clBackgroundBlurView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        return clBackgroundBlurView;
     }
 
     public void closeFABMenu(Activity context) {
@@ -102,6 +126,10 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
         if (rotate_backward != null)
             startAnimation(rotate_backward);
         setImageDrawable(context.getResources().getDrawable(R.drawable.ic_add));
+
+        View view = ((Activity) context).findViewById(R.id.fab_blur_background);
+        view.setVisibility(INVISIBLE);
+
         final RelativeLayout fabHolder = ((ViewGroup) getParent()).findViewById(R.id.fab_layout_holder);
         final int iChildCount = fabHolder.getChildCount();
         for (int i = 0; i < iChildCount; i++) {
@@ -144,6 +172,10 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
         isFABOpen = true;
         if (rotate_forward != null)
             startAnimation(rotate_forward);
+
+        View view = ((Activity) context).findViewById(R.id.fab_blur_background);
+        view.setVisibility(VISIBLE);
+
         RelativeLayout fabHolder = ((ViewGroup) getParent()).findViewById(R.id.fab_layout_holder);
         setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
         int iChildCount = fabHolder.getChildCount();
@@ -154,11 +186,7 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
             fabMenuLayout.setClickable(true);
             fabMenuLayout.setVisibility(View.VISIBLE);
             if (i == 0) {
-
-                /*
-                 56 is Default FAB SIZE and 45 is Animating FAB for pushing up from current position
-                 */
-
+                /* 56 is Default FAB SIZE and 45 is Animating FAB for pushing up from current position */
                 fabMenuLayout.animate().translationY(-toDip(context, 56));
             } else {
                 fabMenuLayout.animate().translationY(-toDip(context, 56) + (-toDip(context, 45) * iCount));
@@ -173,18 +201,19 @@ public class FabActionMenu extends FloatingActionButton implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-
         if (v.getId() == getId()) {
             if (byFirst == -1) {
                 addMenuToFAB(getContext());
                 byFirst = 1;
             }
-
             if (!isFABOpen) {
                 showFABMenu((Activity) getContext());
             } else {
                 closeFABMenu((Activity) getContext());
             }
+        } else if (v.getId() == R.id.fab_blur_background) {
+            closeFABMenu((Activity) context);
+
         } else {
             closeFABMenu((Activity) context);
             fabMenuListener.onFabItemClick(v, actionArray[v.getId()]);
